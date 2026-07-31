@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>REVIA — Decision Engine: Screens 4–6</title>
+<style>
+/* ============================================================
+   REVIA — Decision Engine How It Works · Screens 4–6
+   Identical palette & design system to screens 1–3
+   ============================================================ */
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary:    #1B4332;
+    --primary-md: #2D6A4F;
+    --secondary:  #40916C;
+    --accent:     #D9A441;
+    --accent-lt:  #F5E6C0;
+    --bg:         #F4F1EA;
+    --surface:    #FFFFFF;
+    --surface2:   #EEF0EB;
+    --border:     #D8DDD5;
+    --text:       #1B1B1B;
+    --muted:      #6B7280;
+    --success:    #52B788;
+    --success-lt: #D8F0E5;
+    --alert:      #E07A5F;
+    --alert-lt:   #FAE5DF;
+    --r16: 16px;
+    --r20: 20px;
+    --shadow-sm: 0 2px 8px rgba(27,67,50,0.08);
+    --shadow-md: 0 4px 20px rgba(27,67,50,0.13);
+    --shadow-lg: 0 8px 36px rgba(27,67,50,0.18);
+    --font: -apple-system,"Segoe UI","Inter",system-ui,sans-serif;
+  }
+
+  body {
+    background: #2D4A3A;
+    font-family: var(--font);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    padding: 48px 32px 72px;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  /* ── Phone shell ── */
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .screen-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: rgba(244,241,234,0.45);
+    margin-bottom: 10px; text-align: center;
+  }
+  .phone {
+    width: 375px; height: 812px;
+    background: var(--bg);
+    border-radius: 46px;
+    box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(255,255,255,0.45);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 30px;
+    background: #111;
+    border-radius: 0 0 20px 20px;
+    z-index: 50;
+  }
+
+  /* ── Status bar ── */
+  .status {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 28px 6px;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0; position: relative; z-index: 5;
+    color: rgba(255,255,255,0.88);
+  }
+
+  /* ── Scroll body ── */
+  .body { flex: 1; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; }
+  .body::-webkit-scrollbar { display: none; }
+
+  /* ── Bottom nav ── */
+  .nav { background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 10px 0 22px; flex-shrink: 0; }
+  .ni  { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .ni-icon { font-size: 19px; line-height: 1; }
+  .ni-lbl  { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .ni.active .ni-lbl { color: var(--secondary); }
+  .ni-dot  { width: 4px; height: 4px; border-radius: 50%; background: var(--secondary); }
+
+  /* ── Shared ── */
+  .topbar { padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); flex-shrink: 0; }
+  .topbar-back   { font-size: 14px; color: rgba(255,255,255,0.65); font-weight: 600; }
+  .topbar-title  { font-size: 16px; font-weight: 800; color: #fff; }
+  .topbar-badge  { font-size: 10px; font-weight: 700; color: var(--accent); background: rgba(217,164,65,0.22); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(217,164,65,0.35); }
+  .sec-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 6px; flex-shrink: 0; }
+  .sec-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .sec-tag   { font-size: 10px; font-weight: 700; color: var(--secondary); }
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .chip-green { background: var(--success-lt); color: var(--primary); }
+  .chip-gold  { background: var(--accent-lt);  color: #7A5000; }
+  .chip-muted { background: var(--surface2);   color: var(--muted); }
+  .chip-dark  { background: var(--primary);    color: #fff; }
+  .gap    { height: 12px; flex-shrink: 0; }
+  .gap-lg { height: 20px; flex-shrink: 0; }
+
+  /* ============================================================
+     GLOBAL ANIMATIONS
+  ============================================================ */
+  /* Scanning sweep */
+  @keyframes scanSweep {
+    0%   { top: 0%;    opacity: 1; }
+    90%  { top: 92%;   opacity: 1; }
+    100% { top: 92%;   opacity: 0; }
+  }
+  /* Chip pop-in staggered */
+  @keyframes chipPop {
+    0%   { opacity: 0; transform: scale(0.7) translateY(6px); }
+    70%  { transform: scale(1.06) translateY(-1px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  /* Pulse ring */
+  @keyframes pulseRing {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  /* Blink dot */
+  @keyframes dotBlink {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.18; }
+  }
+  /* Bar fill — individual widths set via inline style --w */
+  @keyframes barFill {
+    0%   { width: 0%; }
+    100% { width: var(--w); }
+  }
+  /* Count up (used with JS-free CSS counter trick via opacity delay) */
+  @keyframes countUp {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  /* Score card slide in */
+  @keyframes cardSlide {
+    0%   { opacity: 0; transform: translateX(-14px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  /* Arrow bounce */
+  @keyframes arrowBounce {
+    0%,100% { transform: translateX(0); }
+    50%     { transform: translateX(5px); }
+  }
+  /* Glow pulse */
+  @keyframes glowPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(64,145,108,0); }
+    50%     { box-shadow: 0 0 0 8px rgba(64,145,108,0.18); }
+  }
+  /* Float */
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-4px); }
+  }
+  /* Progress fill generic */
+  @keyframes progressFill {
+    0%   { width: 0%; }
+    100% { width: 88%; }
+  }
+
+  /* ============================================================
+     SCREEN 4 — RESOURCE IDENTIFICATION
+  ============================================================ */
+  .id-bg {
+    background: linear-gradient(155deg, var(--primary) 0%, var(--primary-md) 50%, #2D6A4F 100%);
+    flex-shrink: 0;
+  }
+  .id-hero { padding: 14px 20px 18px; }
+  .id-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+  .id-title   { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.2; }
+  .id-sub     { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 3px; line-height: 1.5; }
+
+  /* Scan viewport */
+  .scan-viewport {
+    margin: 0 20px 0;
+    background: #0E2B1F;
+    border: 2px solid rgba(64,145,108,0.45);
+    border-radius: var(--r20);
+    height: 188px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  /* Grid lines */
+  .scan-viewport::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 29px, rgba(64,145,108,0.08) 30px),
+      repeating-linear-gradient(90deg, transparent, transparent 29px, rgba(64,145,108,0.08) 30px);
+    pointer-events: none;
+  }
+  /* Corner brackets */
+  .scan-corner { position: absolute; width: 20px; height: 20px; border-color: var(--secondary); border-style: solid; }
+  .sc-tl { top: 10px;  left: 10px;  border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+  .sc-tr { top: 10px;  right: 10px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+  .sc-bl { bottom: 10px; left: 10px;  border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+  .sc-br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+  /* Scan line */
+  .scan-line {
+    position: absolute; left: 10px; right: 10px; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--secondary) 30%, #A8FFD4 50%, var(--secondary) 70%, transparent 100%);
+    top: 0;
+    animation: scanSweep 2.4s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(82,183,136,0.55);
+    z-index: 5;
+  }
+  /* Resource preview inside scan */
+  .scan-resource {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    z-index: 3;
+  }
+  .scan-resource-icon { font-size: 44px; animation: float 3s ease-in-out infinite; }
+  .scan-resource-label {
+    font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.9);
+    background: rgba(64,145,108,0.38); border: 1px solid rgba(64,145,108,0.5);
+    padding: 3px 12px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  /* Pulse rings around icon */
+  .pulse-ring {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 70px; height: 70px; border-radius: 50%;
+    border: 1.5px solid rgba(82,183,136,0.5);
+    animation: pulseRing 2s ease-out infinite;
+    z-index: 2;
+  }
+  .pulse-ring:nth-child(2) { animation-delay: 0.65s; }
+  .pulse-ring:nth-child(3) { animation-delay: 1.3s; }
+
+  /* Scan status row */
+  .scan-status {
+    margin: 10px 20px 0;
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .blink-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: dotBlink 0.9s ease-in-out infinite; flex-shrink: 0; }
+  .scan-status-text { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.85); }
+  .scan-status-sub  { font-size: 11px; color: rgba(255,255,255,0.5); margin-left: auto; }
+
+  /* Category chips cloud */
+  .chip-cloud {
+    margin: 12px 20px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r20);
+    padding: 14px 14px 10px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .cc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
+  .cc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cc-chip {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px 6px 9px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    border: 1.5px solid;
+    opacity: 0;
+    animation: chipPop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  .cc-chip .cc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Chip variants */
+  .ccc-sayur   { background: #EDFAF2; border-color: var(--success); color: var(--primary); animation-delay: 0.10s; }
+  .ccc-sayur   .cc-dot { background: var(--success); }
+  .ccc-plastik { background: #E3EAF8; border-color: #5B8DEF; color: #1B3070; animation-delay: 0.22s; }
+  .ccc-plastik .cc-dot { background: #5B8DEF; }
+  .ccc-kardus  { background: var(--accent-lt); border-color: var(--accent); color: #7A5000; animation-delay: 0.34s; }
+  .ccc-kardus  .cc-dot { background: var(--accent); }
+  .ccc-kopi    { background: #F0E8DC; border-color: #8B6040; color: #4A2C10; animation-delay: 0.46s; }
+  .ccc-kopi    .cc-dot { background: #8B6040; }
+  .ccc-kain    { background: #EDE8F5; border-color: #9B72CF; color: #3C1A6E; animation-delay: 0.58s; }
+  .ccc-kain    .cc-dot { background: #9B72CF; }
+  .ccc-logam   { background: #EEF0EB; border-color: #8A9A8A; color: #2A3A2A; animation-delay: 0.70s; }
+  .ccc-logam   .cc-dot { background: #8A9A8A; }
+  .ccc-organik { background: #D8F0E5; border-color: #2D6A4F; color: var(--primary); animation-delay: 0.82s; font-size: 12px; }
+  .ccc-organik .cc-dot { background: var(--primary); }
+
+  /* Detected result card */
+  .detect-card {
+    margin: 12px 20px 0;
+    background: var(--surface);
+    border: 1.5px solid var(--success);
+    border-radius: var(--r16);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 0 0 3px rgba(82,183,136,0.12), var(--shadow-sm);
+    flex-shrink: 0;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+  .detect-icon-wrap {
+    width: 46px; height: 46px; border-radius: 14px;
+    background: var(--success-lt);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .detect-body { flex: 1; }
+  .detect-label { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .detect-name  { font-size: 16px; font-weight: 900; color: var(--text); margin-top: 1px; }
+  .detect-meta  { font-size: 11px; color: var(--secondary); font-weight: 700; margin-top: 2px; }
+  .detect-conf  { text-align: center; flex-shrink: 0; }
+  .detect-pct   { font-size: 24px; font-weight: 900; color: var(--secondary); line-height: 1; animation: countUp 0.6s ease-out 0.5s both; }
+  .detect-pct-label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+
+  /* AI method badges */
+  .method-row {
+    margin: 10px 20px 0;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .method-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r16); padding: 7px 12px;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    box-shadow: var(--shadow-sm); flex: 1;
+  }
+  .method-badge.done { border-color: var(--success); color: var(--primary); background: var(--success-lt); }
+  .mb-icon { font-size: 14px; }
+
+
+  /* ============================================================
+     SCREEN 5 — DECISION ENGINE CORE
+  ============================================================ */
+  .de-hero {
+    background: linear-gradient(155deg, var(--primary) 0%, #1E5C42 50%, #2D6A4F 100%);
+    padding: 14px 20px 18px; flex-shrink: 0;
+  }
+  .de-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+  .de-title   { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.2; }
+  .de-title span { color: var(--accent); }
+  .de-sub     { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 3px; line-height: 1.5; }
+
+  /* Two-panel grid */
+  .panel-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 12px 20px 0; flex-shrink: 0;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r16);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .panel-header {
+    padding: 9px 12px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ph-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ph-dot-in  { background: var(--secondary); }
+  .ph-dot-db  { background: var(--accent); animation: dotBlink 1.2s ease-in-out infinite; }
+  .ph-title   { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .ph-live    { font-size: 9px; font-weight: 700; color: var(--accent); margin-left: auto; background: var(--accent-lt); padding: 1px 7px; border-radius: 20px; }
+
+  .panel-row  {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; border-bottom: 1px solid var(--border);
+  }
+  .panel-row:last-child { border-bottom: none; }
+  .pr-icon  { font-size: 14px; flex-shrink: 0; width: 22px; text-align: center; }
+  .pr-body  { flex: 1; }
+  .pr-label { font-size: 9.5px; color: var(--muted); font-weight: 600; }
+  .pr-val   { font-size: 12px; font-weight: 800; color: var(--text); }
+  .pr-val.green { color: var(--secondary); }
+  .pr-val.gold  { color: #7A5000; }
+
+  /* Arrow connector between panels */
+  .panel-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent);
+    animation: arrowBounce 1.6s ease-in-out infinite;
+    margin-top: 10px;
+  }
+
+  /* Engine core visual */
+  .engine-core {
+    margin: 10px 20px 0;
+    background: var(--primary);
+    border-radius: var(--r16);
+    padding: 14px 16px 12px;
+    display: flex; align-items: center; gap: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(27,67,50,0.25);
+    position: relative; overflow: hidden;
+  }
+  .engine-core::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 70% 50%, rgba(217,164,65,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .ec-icon-wrap {
+    width: 52px; height: 52px; border-radius: 18px;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+    animation: float 3s ease-in-out infinite;
+  }
+  .ec-body { flex: 1; }
+  .ec-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.08em; }
+  .ec-name  { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.2; margin-top: 2px; }
+  .ec-sub   { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .ec-score { text-align: center; flex-shrink: 0; }
+  .ec-score-val   { font-size: 28px; font-weight: 900; color: var(--accent); line-height: 1; animation: countUp 0.6s ease-out 0.4s both; }
+  .ec-score-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+
+  /* Recovery Score formula chart */
+  .formula-card {
+    margin: 10px 20px 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r16);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+  }
+  .formula-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .fh-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .fh-tag   { font-size: 10px; font-weight: 700; color: var(--secondary); background: var(--success-lt); padding: 2px 10px; border-radius: 20px; }
+
+  .weight-bar-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .wb-item  { display: flex; flex-direction: column; gap: 5px; }
+  .wb-top   { display: flex; align-items: center; justify-content: space-between; }
+  .wb-label { font-size: 12px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .wb-icon  { font-size: 14px; }
+  .wb-pct   { font-size: 12px; font-weight: 900; }
+  .wb-track { height: 10px; background: var(--surface2); border-radius: 5px; overflow: hidden; }
+  .wb-fill  {
+    height: 100%; border-radius: 5px;
+    width: 0%;
+    animation: barFill 1.4s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  /* Delay each bar */
+  .wbi-1 .wb-fill { animation-delay: 0.15s; }
+  .wbi-2 .wb-fill { animation-delay: 0.40s; }
+  .wbi-3 .wb-fill { animation-delay: 0.65s; }
+  .wbi-4 .wb-fill { animation-delay: 0.90s; }
+
+  /* bar colors */
+  .wbf-economic    { background: linear-gradient(90deg, var(--secondary), #74C69D); }
+  .wbf-environ     { background: linear-gradient(90deg, #2D6A4F, #52B788); }
+  .wbf-demand      { background: linear-gradient(90deg, var(--accent), #F0C040); }
+  .wbf-distance    { background: linear-gradient(90deg, #8A9A8A, #B0C0B0); }
+
+  /* pct colors */
+  .pct-economic { color: var(--secondary); }
+  .pct-environ  { color: var(--primary-md); }
+  .pct-demand   { color: #7A5000; }
+  .pct-distance { color: var(--muted); }
+
+  /* total row */
+  .formula-total {
+    border-top: 1.5px solid var(--border);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ft-label { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .ft-score {
+    font-size: 20px; font-weight: 900; color: var(--secondary);
+    animation: countUp 0.5s ease-out 1.1s both;
+  }
+
+
+  /* ============================================================
+     SCREEN 6 — DYNAMIC RECOVERY PATH
+  ============================================================ */
+  .path-hero {
+    background: linear-gradient(140deg, var(--primary) 0%, #1E5C42 50%, var(--primary-md) 100%);
+    padding: 14px 20px 20px; flex-shrink: 0;
+  }
+  .ph-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+  .ph-title   { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.2; }
+  .ph-title span { color: var(--accent); }
+  .ph-sub     { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 3px; line-height: 1.5; }
+  .path-resource-pill {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.92);
+  }
+
+  /* Novelty badge */
+  .novelty-banner {
+    margin: 12px 20px 0;
+    background: linear-gradient(90deg, rgba(217,164,65,0.15) 0%, rgba(217,164,65,0.05) 100%);
+    border: 1.5px solid rgba(217,164,65,0.45);
+    border-radius: var(--r16);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .nb-icon  { font-size: 20px; flex-shrink: 0; }
+  .nb-title { font-size: 12px; font-weight: 800; color: #7A5000; }
+  .nb-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; line-height: 1.4; }
+
+  /* Leaderboard */
+  .leaderboard { padding: 10px 20px 0; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+
+  .rank-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r20);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    animation: cardSlide 0.45s ease-out both;
+    position: relative;
+  }
+  .rank-card:nth-child(1) { animation-delay: 0.05s; }
+  .rank-card:nth-child(2) { animation-delay: 0.18s; }
+  .rank-card:nth-child(3) { animation-delay: 0.31s; }
+  .rank-card:nth-child(4) { animation-delay: 0.44s; }
+
+  /* Gold highlight for #1 */
+  .rank-card.rank-1 {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(217,164,65,0.18), var(--shadow-md);
+  }
+  .rank-card.rank-1::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), #F0C040);
+  }
+
+  .rank-card-inner { display: flex; align-items: center; gap: 0; }
+
+  /* Rank number sidebar */
+  .rank-num-col {
+    width: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    padding: 14px 0;
+    border-right: 1px solid var(--border);
+  }
+  .rank-num {
+    font-size: 20px; font-weight: 900;
+    width: 30px; height: 30px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+  }
+  .rn-1 { background: var(--accent); color: #4A3000; font-size: 14px; font-weight: 900; }
+  .rn-2 { background: var(--surface2); color: var(--muted); }
+  .rn-3 { background: var(--surface2); color: var(--muted); }
+  .rn-4 { background: var(--surface2); color: var(--muted); }
+
+  /* Card body */
+  .rank-card-body { flex: 1; padding: 12px 12px 10px; }
+  .rcb-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .rcb-icon-wrap {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .rci-1 { background: var(--accent-lt); }
+  .rci-2 { background: var(--success-lt); }
+  .rci-3 { background: #E3EAF8; }
+  .rci-4 { background: #F0E8DC; }
+
+  .rcb-info { flex: 1; }
+  .rcb-name  { font-size: 14px; font-weight: 800; color: var(--text); }
+  .rank-card.rank-1 .rcb-name { color: var(--primary); }
+  .rcb-type  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* Score badge */
+  .score-badge { text-align: center; flex-shrink: 0; padding-right: 4px; }
+  .sb-val   { font-size: 28px; font-weight: 900; line-height: 1; animation: countUp 0.5s ease-out both; }
+  .rank-card:nth-child(1) .sb-val { animation-delay: 0.20s; color: var(--accent); }
+  .rank-card:nth-child(2) .sb-val { animation-delay: 0.35s; color: var(--secondary); }
+  .rank-card:nth-child(3) .sb-val { animation-delay: 0.50s; color: var(--secondary); }
+  .rank-card:nth-child(4) .sb-val { animation-delay: 0.65s; color: var(--muted); }
+  .sb-label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+
+  /* Mini bar in each card */
+  .rank-bar-wrap { margin-top: 2px; }
+  .rank-bar-track { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .rank-bar-fill  { height: 100%; border-radius: 3px; animation: barFill 1.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+  .rank-card:nth-child(1) .rank-bar-fill { background: var(--accent); animation-delay: 0.25s; }
+  .rank-card:nth-child(2) .rank-bar-fill { background: var(--secondary); animation-delay: 0.40s; }
+  .rank-card:nth-child(3) .rank-bar-fill { background: var(--secondary); animation-delay: 0.55s; opacity: 0.7; }
+  .rank-card:nth-child(4) .rank-bar-fill { background: var(--muted); animation-delay: 0.70s; opacity: 0.5; }
+
+  /* Benefit tags row */
+  .rank-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+  .rt-tag    { padding: 3px 9px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+  .rt-green  { background: var(--success-lt); color: var(--primary); }
+  .rt-gold   { background: var(--accent-lt); color: #7A5000; }
+  .rt-blue   { background: #E3EAF8; color: #1B3070; }
+  .rt-muted  { background: var(--surface2); color: var(--muted); }
+
+  /* Best pick label */
+  .best-pick-label {
+    position: absolute; top: 10px; right: 12px;
+    background: var(--accent); color: #4A3000;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 9px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  /* Summary row */
+  .path-summary {
+    margin: 12px 20px;
+    background: var(--primary);
+    border-radius: var(--r16);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-md);
+  }
+  .ps-icon   { font-size: 22px; flex-shrink: 0; }
+  .ps-body   { flex: 1; }
+  .ps-title  { font-size: 13px; font-weight: 800; color: #fff; }
+  .ps-sub    { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; line-height: 1.4; }
+  .ps-cta    { font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
+
+  /* ── Footer ── */
+  footer { width: 100%; text-align: center; padding: 28px 0 12px; font-size: 11px; color: rgba(244,241,234,0.35); font-family: var(--font); border-top: 1px solid rgba(244,241,234,0.12); margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SCREEN 4 — RESOURCE IDENTIFICATION
+============================================================ -->
+<div class="phone-wrap">
+  <div class="screen-label">DE–04 — Resource Identification · AI Detection</div>
+  <div class="phone">
+
+    <div class="status">
+      <span>9:41</span>
+      <span style="font-size:10px;color:rgba(255,255,255,0.75);">▲▲▲ WiFi 100%</span>
+    </div>
+
+    <!-- Dark hero + topbar merged -->
+    <div class="id-bg">
+      <div class="topbar">
+        <div class="topbar-back">← Tahap 1</div>
+        <div class="topbar-title">Identifikasi</div>
+        <div class="topbar-badge">Tahap 2 / 7</div>
+      </div>
+      <div class="id-hero">
+        <div class="id-eyebrow">Decision Engine · AI Identification</div>
+        <div class="id-title">Mengenali Jenis<br/>Resource</div>
+        <div class="id-sub">AI Database REVIA menganalisis foto dan metadata untuk mengklasifikasi material secara otomatis.</div>
+      </div>
+
+      <!-- Scan viewport -->
+      <div class="scan-viewport" style="margin-bottom:16px;">
+        <div class="scan-corner sc-tl"></div>
+        <div class="scan-corner sc-tr"></div>
+        <div class="scan-corner sc-bl"></div>
+        <div class="scan-corner sc-br"></div>
+        <div class="scan-line"></div>
+        <!-- Pulse rings -->
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <!-- Resource center -->
+        <div class="scan-resource">
+          <div class="scan-resource-icon">🥬</div>
+          <div class="scan-resource-label">Sisa Sayur</div>
+        </div>
+        <!-- Grid overlay dots -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:1;" viewBox="0 0 335 188" preserveAspectRatio="none">
+          <circle cx="60"  cy="40"  r="3" fill="rgba(82,183,136,0.4)"/>
+          <circle cx="275" cy="40"  r="3" fill="rgba(82,183,136,0.4)"/>
+          <circle cx="60"  cy="148" r="3" fill="rgba(82,183,136,0.4)"/>
+          <circle cx="275" cy="148" r="3" fill="rgba(82,183,136,0.4)"/>
+          <text x="46" y="36"  font-size="8" fill="rgba(82,183,136,0.55)" font-family="monospace">0.0°</text>
+          <text x="236" y="36" font-size="8" fill="rgba(82,183,136,0.55)" font-family="monospace">8.5 kg</text>
+          <text x="46" y="158" font-size="8" fill="rgba(82,183,136,0.55)" font-family="monospace">GPS ✓</text>
+          <text x="218" y="158" font-size="8" fill="rgba(82,183,136,0.55)" font-family="monospace">Organic ✓</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+
+      <!-- Scan status -->
+      <div class="scan-status" style="padding:12px 20px 0;">
+        <div class="blink-dot"></div>
+        <div class="scan-status-text">Identifikasi Selesai</div>
+        <div class="scan-status-sub">96% Confidence</div>
+      </div>
+
+      <!-- Detected result -->
+      <div class="detect-card">
+        <div class="detect-icon-wrap">🥬</div>
+        <div class="detect-body">
+          <div class="detect-label">Material Terdeteksi</div>
+          <div class="detect-name">Sisa Sayur Organik</div>
+          <div class="detect-meta">Kategori: Limbah Organik Basah · Kelas A</div>
+        </div>
+        <div class="detect-conf">
+          <div class="detect-pct">96%</div>
+          <div class="detect-pct-label">Confidence</div>
+        </div>
+      </div>
+
+      <!-- AI method badges -->
+      <div class="method-row">
+        <div class="method-badge done">
+          <span class="mb-icon">📷</span>Image AI
+        </div>
+        <div class="method-badge done">
+          <span class="mb-icon">📋</span>Metadata
+        </div>
+        <div class="method-badge done">
+          <span class="mb-icon">📍</span>Geo-tag
+        </div>
+      </div>
+
+      <!-- Category chips cloud -->
+      <div class="chip-cloud">
+        <div class="cc-label">Database Kategori Dikenali</div>
+        <div class="cc-chips">
+          <div class="cc-chip ccc-sayur">
+            <span class="cc-dot"></span>Sayur
+          </div>
+          <div class="cc-chip ccc-plastik">
+            <span class="cc-dot"></span>Plastik
+          </div>
+          <div class="cc-chip ccc-kardus">
+            <span class="cc-dot"></span>Kardus
+          </div>
+          <div class="cc-chip ccc-kopi">
+            <span class="cc-dot"></span>Ampas Kopi
+          </div>
+          <div class="cc-chip ccc-kain">
+            <span class="cc-dot"></span>Kain
+          </div>
+          <div class="cc-chip ccc-logam">
+            <span class="cc-dot"></span>Logam
+          </div>
+          <div class="cc-chip ccc-organik" style="border-width:2px;font-weight:900;">
+            <span class="cc-dot"></span>✦ Organik ← Terdeteksi
+          </div>
+        </div>
+      </div>
+
+      <div class="gap-lg"></div>
+
+    </div><!-- /body -->
+
+    <!-- Bottom nav -->
+    <div class="nav">
+      <div class="ni"><div class="ni-icon">🏠</div><div class="ni-lbl">Beranda</div></div>
+      <div class="ni"><div class="ni-icon">🔍</div><div class="ni-lbl">Temukan</div></div>
+      <div class="ni active"><div class="ni-icon">⚡</div><div class="ni-lbl">Engine</div><div class="ni-dot"></div></div>
+      <div class="ni"><div class="ni-icon">💬</div><div class="ni-lbl">Pesan</div></div>
+      <div class="ni"><div class="ni-icon">👤</div><div class="ni-lbl">Profil</div></div>
+    </div>
+
+  </div><!-- /phone -->
+</div><!-- /phone-wrap -->
+
+
+<!-- ============================================================
+     SCREEN 5 — DECISION ENGINE CORE
+============================================================ -->
+<div class="phone-wrap">
+  <div class="screen-label">DE–05 — Decision Engine Core · Recovery Score</div>
+  <div class="phone">
+
+    <div class="status">
+      <span>9:41</span>
+      <span style="font-size:10px;color:rgba(255,255,255,0.75);">▲▲▲ WiFi 100%</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="de-hero">
+      <div class="topbar" style="padding:0 0 12px;">
+        <div class="topbar-back">← Identifikasi</div>
+        <div class="topbar-title"><span style="color:var(--accent);">Decision</span> Engine</div>
+        <div class="topbar-badge">Tahap 3 / 7</div>
+      </div>
+      <div class="de-eyebrow">Inti Sistem · Real-Time Analysis</div>
+      <div class="de-title">Kalkulasi <span>Recovery</span><br/>Score</div>
+      <div class="de-sub">Engine memproses INPUT + DATABASE secara bersamaan untuk menghitung skor pemulihan terbaik.</div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+
+      <!-- Two panels side by side -->
+      <div class="panel-grid">
+
+        <!-- Panel INPUT -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="ph-dot ph-dot-in"></div>
+            <div class="ph-title">Input</div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">♻️</div>
+            <div class="pr-body">
+              <div class="pr-label">Jenis</div>
+              <div class="pr-val green">Sayur</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">⚖️</div>
+            <div class="pr-body">
+              <div class="pr-label">Berat</div>
+              <div class="pr-val">8.5 kg</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">📍</div>
+            <div class="pr-body">
+              <div class="pr-label">Lokasi</div>
+              <div class="pr-val">Sleman</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">🔎</div>
+            <div class="pr-body">
+              <div class="pr-label">Kondisi</div>
+              <div class="pr-val green">Bersih</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel DATABASE -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="ph-dot ph-dot-db"></div>
+            <div class="ph-title">Database</div>
+            <div class="ph-live">LIVE</div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">📊</div>
+            <div class="pr-body">
+              <div class="pr-label">Permintaan</div>
+              <div class="pr-val green">Tinggi</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">🏭</div>
+            <div class="pr-body">
+              <div class="pr-label">Kapasitas</div>
+              <div class="pr-val">12 ton/bln</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">💰</div>
+            <div class="pr-body">
+              <div class="pr-label">Harga Mat.</div>
+              <div class="pr-val gold">Rp 4.500</div>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="pr-icon">🌿</div>
+            <div class="pr-body">
+              <div class="pr-label">CO₂ Hemat</div>
+              <div class="pr-val green">-18 kg</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-grid -->
+
+      <!-- Arrow connector -->
+      <div style="display:flex;align-items:center;justify-content:center;padding:6px 0;flex-shrink:0;">
+        <span style="font-size:22px;color:var(--accent);animation:arrowBounce 1.6s ease-in-out infinite;display:inline-block;transform:rotate(90deg);">→</span>
+      </div>
+
+      <!-- Engine core badge -->
+      <div class="engine-core">
+        <div class="ec-icon-wrap">🧠</div>
+        <div class="ec-body">
+          <div class="ec-label">Decision Engine · Processing</div>
+          <div class="ec-name">Recovery Score<br/>Dihitung</div>
+          <div class="ec-sub">4 bobot · Multi-variable scoring</div>
+        </div>
+        <div class="ec-score">
+          <div class="ec-score-val">91</div>
+          <div class="ec-score-label">Score</div>
+        </div>
+      </div>
+
+      <!-- Formula / bar chart -->
+      <div class="formula-card">
+        <div class="formula-header">
+          <span class="fh-title">Recovery Score Formula</span>
+          <span class="fh-tag">100 Poin</span>
+        </div>
+        <div class="weight-bar-list">
+
+          <!-- Economic Value 40% -->
+          <div class="wb-item wbi-1">
+            <div class="wb-top">
+              <div class="wb-label"><span class="wb-icon">💰</span>Economic Value</div>
+              <div class="wb-pct pct-economic">40%</div>
+            </div>
+            <div class="wb-track">
+              <div class="wb-fill wbf-economic" style="--w:40%;"></div>
+            </div>
+          </div>
+
+          <!-- Environmental Value 30% -->
+          <div class="wb-item wbi-2">
+            <div class="wb-top">
+              <div class="wb-label"><span class="wb-icon">🌿</span>Environmental Value</div>
+              <div class="wb-pct pct-environ">30%</div>
+            </div>
+            <div class="wb-track">
+              <div class="wb-fill wbf-environ" style="--w:30%;"></div>
+            </div>
+          </div>
+
+          <!-- Demand 20% -->
+          <div class="wb-item wbi-3">
+            <div class="wb-top">
+              <div class="wb-label"><span class="wb-icon">📈</span>Market Demand</div>
+              <div class="wb-pct pct-demand">20%</div>
+            </div>
+            <div class="wb-track">
+              <div class="wb-fill wbf-demand" style="--w:20%;"></div>
+            </div>
+          </div>
+
+          <!-- Distance 10% -->
+          <div class="wb-item wbi-4">
+            <div class="wb-top">
+              <div class="wb-label"><span class="wb-icon">📍</span>Distance Factor</div>
+              <div class="wb-pct pct-distance">10%</div>
+            </div>
+            <div class="wb-track">
+              <div class="wb-fill wbf-distance" style="--w:10%;"></div>
+            </div>
+          </div>
+
+        </div>
+        <div class="formula-total">
+          <div class="ft-label">Recovery Score Akhir</div>
+          <div class="ft-score">91 / 100</div>
+        </div>
+      </div>
+
+      <div class="gap-lg"></div>
+
+    </div><!-- /body -->
+
+    <!-- Bottom nav -->
+    <div class="nav">
+      <div class="ni"><div class="ni-icon">🏠</div><div class="ni-lbl">Beranda</div></div>
+      <div class="ni"><div class="ni-icon">🔍</div><div class="ni-lbl">Temukan</div></div>
+      <div class="ni active"><div class="ni-icon">⚡</div><div class="ni-lbl">Engine</div><div class="ni-dot"></div></div>
+      <div class="ni"><div class="ni-icon">💬</div><div class="ni-lbl">Pesan</div></div>
+      <div class="ni"><div class="ni-icon">👤</div><div class="ni-lbl">Profil</div></div>
+    </div>
+
+  </div><!-- /phone -->
+</div><!-- /phone-wrap -->
+
+
+<!-- ============================================================
+     SCREEN 6 — DYNAMIC RECOVERY PATH (Novelty)
+============================================================ -->
+<div class="phone-wrap">
+  <div class="screen-label">DE–06 — Dynamic Recovery Path · Leaderboard</div>
+  <div class="phone">
+
+    <div class="status">
+      <span>9:41</span>
+      <span style="font-size:10px;color:rgba(255,255,255,0.75);">▲▲▲ WiFi 100%</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="path-hero">
+      <div class="topbar" style="padding:0 0 12px;">
+        <div class="topbar-back">← Engine Core</div>
+        <div class="topbar-title">Recovery <span style="color:var(--accent);">Path</span></div>
+        <div class="topbar-badge">Tahap 4 / 7</div>
+      </div>
+      <div class="ph-eyebrow">Novelty Feature · Dynamic Ranking</div>
+      <div class="ph-title">Jalur Terbaik untuk<br/><span>Resource Ini</span></div>
+      <div class="ph-sub">Engine meranking semua opsi pemulihan secara dinamis berdasarkan Recovery Score tertinggi.</div>
+      <div class="path-resource-pill">
+        🥬 Resource: Sisa Sayur Organik · 8.5 kg
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+
+      <!-- Novelty banner -->
+      <div class="novelty-banner">
+        <div class="nb-icon">✦</div>
+        <div>
+          <div class="nb-title">Dynamic Recovery Path — Fitur Unggulan</div>
+          <div class="nb-sub">Ranking diperbarui real-time saat permintaan mitra, harga, atau kapasitas berubah.</div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="leaderboard">
+
+        <!-- Rank 1 — Maggot Farm 95 -->
+        <div class="rank-card rank-1">
+          <div class="best-pick-label">★ Terbaik</div>
+          <div class="rank-card-inner">
+            <div class="rank-num-col">
+              <div class="rank-num rn-1">#1</div>
+            </div>
+            <div class="rank-card-body">
+              <div class="rcb-top">
+                <div class="rcb-icon-wrap rci-1">🪱</div>
+                <div class="rcb-info">
+                  <div class="rcb-name">Maggot Farm BSF</div>
+                  <div class="rcb-type">CV Berkah Maggot · 2.3 km · Terverifikasi</div>
+                </div>
+                <div class="score-badge">
+                  <div class="sb-val">95</div>
+                  <div class="sb-label">Score</div>
+                </div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-track">
+                  <div class="rank-bar-fill" style="--w:95%;"></div>
+                </div>
+              </div>
+              <div class="rank-tags">
+                <span class="rt-tag rt-gold">Nilai Tertinggi</span>
+                <span class="rt-tag rt-green">+40% protein</span>
+                <span class="rt-tag rt-green">Loop tertutup</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rank 2 — Compost Center 84 -->
+        <div class="rank-card">
+          <div class="rank-card-inner">
+            <div class="rank-num-col">
+              <div class="rank-num rn-2">#2</div>
+            </div>
+            <div class="rank-card-body">
+              <div class="rcb-top">
+                <div class="rcb-icon-wrap rci-2">🌱</div>
+                <div class="rcb-info">
+                  <div class="rcb-name">Compost Center</div>
+                  <div class="rcb-type">Bank Sampah Gemah Ripah · 1.8 km</div>
+                </div>
+                <div class="score-badge">
+                  <div class="sb-val">84</div>
+                  <div class="sb-label">Score</div>
+                </div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-track">
+                  <div class="rank-bar-fill" style="--w:84%;"></div>
+                </div>
+              </div>
+              <div class="rank-tags">
+                <span class="rt-tag rt-green">CO₂ -14 kg</span>
+                <span class="rt-tag rt-blue">Rp 3.200/kg</span>
+                <span class="rt-tag rt-muted">Tersedia</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rank 3 — Eco Enzyme 77 -->
+        <div class="rank-card">
+          <div class="rank-card-inner">
+            <div class="rank-num-col">
+              <div class="rank-num rn-3">#3</div>
+            </div>
+            <div class="rank-card-body">
+              <div class="rcb-top">
+                <div class="rcb-icon-wrap rci-3">🧪</div>
+                <div class="rcb-info">
+                  <div class="rcb-name">Eco Enzyme</div>
+                  <div class="rcb-type">Komunitas Hijau · 3.5 km</div>
+                </div>
+                <div class="score-badge">
+                  <div class="sb-val">77</div>
+                  <div class="sb-label">Score</div>
+                </div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-track">
+                  <div class="rank-bar-fill" style="--w:77%;"></div>
+                </div>
+              </div>
+              <div class="rank-tags">
+                <span class="rt-tag rt-blue">Produk cair</span>
+                <span class="rt-tag rt-green">CO₂ -10 kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rank 4 — Animal Feed 68 -->
+        <div class="rank-card">
+          <div class="rank-card-inner">
+            <div class="rank-num-col">
+              <div class="rank-num rn-4">#4</div>
+            </div>
+            <div class="rank-card-body">
+              <div class="rcb-top">
+                <div class="rcb-icon-wrap rci-4">🐄</div>
+                <div class="rcb-info">
+                  <div class="rcb-name">Animal Feed</div>
+                  <div class="rcb-type">Peternak Sari · 5.1 km</div>
+                </div>
+                <div class="score-badge">
+                  <div class="sb-val">68</div>
+                  <div class="sb-label">Score</div>
+                </div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-track">
+                  <div class="rank-bar-fill" style="--w:68%;"></div>
+                </div>
+              </div>
+              <div class="rank-tags">
+                <span class="rt-tag rt-muted">Alternatif</span>
+                <span class="rt-tag rt-green">Rp 1.500/kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /leaderboard -->
+
+      <!-- Summary footer -->
+      <div class="path-summary">
+        <div class="ps-icon">🎯</div>
+        <div class="ps-body">
+          <div class="ps-title">Pilih Maggot Farm BSF</div>
+          <div class="ps-sub">Recovery Score 95 · Nilai tertinggi · Loop sirkular tertutup</div>
+        </div>
+        <div class="ps-cta">Pilih →</div>
+      </div>
+
+      <div class="gap-lg"></div>
+
+    </div><!-- /body -->
+
+    <!-- Bottom nav -->
+    <div class="nav">
+      <div class="ni"><div class="ni-icon">🏠</div><div class="ni-lbl">Beranda</div></div>
+      <div class="ni"><div class="ni-icon">🔍</div><div class="ni-lbl">Temukan</div></div>
+      <div class="ni active"><div class="ni-icon">⚡</div><div class="ni-lbl">Engine</div><div class="ni-dot"></div></div>
+      <div class="ni"><div class="ni-icon">💬</div><div class="ni-lbl">Pesan</div></div>
+      <div class="ni"><div class="ni-icon">👤</div><div class="ni-lbl">Profil</div></div>
+    </div>
+
+  </div><!-- /phone -->
+</div><!-- /phone-wrap -->
+
+
+<footer>
+  REVIA — Decision Engine: How It Works · Screens 4–6 · Made with IBM Bob
+</footer>
+
+</body>
+</html>
